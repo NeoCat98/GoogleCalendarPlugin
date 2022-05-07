@@ -41,7 +41,7 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
     
     $user = $DB->get_record_sql('SELECT checkbox FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$courseid,$moduleid]);
     
-    if ($modulename == 'assign' or $modulename == 'quiz') {
+    if ($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback') {
 
         $elementname1 = 'checkboxGoogleCalendar';
 
@@ -87,11 +87,11 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         //Obtaining value of the Google Calendar Form
         $newobj->checkbox = $data->checkboxGoogleCalendar;
         //Obtain the date when the activity start
-        $datestart->dateTime = gmdate("Y-m-d",$data->allowsubmissionsfromdate).'T'.gmdate("H:m:s.000",$data->allowsubmissionsfromdate).'Z';
+        $datestart->dateTime = gmdate("Y-m-d",$data->allowsubmissionsfromdate).'T'.gmdate("H:i:s.000",$data->allowsubmissionsfromdate).'Z';
         //Obtain the name of the assign
         $summary = $data->name;
         //Obtain the date when the activity end
-        $dateend->dateTime = gmdate("Y-m-d",$data->duedate) .'T'. gmdate("H:m:s.000",$data->duedate).'Z';
+        $dateend->dateTime = gmdate("Y-m-d",$data->duedate) .'T'. gmdate("H:i:s.000",$data->duedate).'Z';
         //Add variables of dateTime to add them in the database
         $newobj->end = $dateend->dateTime;
         $newobj->start = $datestart->dateTime;
@@ -177,8 +177,8 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
             }
         }  
     } 
-    //post form quiz module
-    if($modulename == 'quiz'){
+    //post form for quiz/feedback module
+    if($modulename == 'quiz' or $modulename == 'feedback'){
         $context = context_course::instance($data->course);
         //Find if the assign is already created
         $event = $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
@@ -193,11 +193,11 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         //Obtaining value of the Google Calendar Form
         $newobj->checkbox = $data->checkboxGoogleCalendar;
         //Obtain the date when the activity start
-        $datestart->dateTime = gmdate("Y-m-d",$data->timeopen).'T'.gmdate("H:m:s.000",$data->timeopen).'Z';
+        $datestart->dateTime = gmdate("Y-m-d",$data->timeopen).'T'.gmdate("H:i:s.000",$data->timeopen).'Z';
         //Obtain the name of the assign
         $summary = $data->name;
         //Obtain the date when the activity end
-        $dateend->dateTime = gmdate("Y-m-d",$data->timeclose) .'T'. gmdate("H:m:s.000",$data->timeclose).'Z';
+        $dateend->dateTime = gmdate("Y-m-d",$data->timeclose) .'T'. gmdate("H:i:s.000",$data->timeclose).'Z';
         //Add variables of dateTime to add them in the database
         $newobj->end = $dateend->dateTime;
         $newobj->start = $datestart->dateTime;
