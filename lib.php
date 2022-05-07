@@ -74,7 +74,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
     if($modulename == 'assign'){
         $context = context_course::instance($data->course);
         //Find if the assign is already created
-        $user = $DB->get_record_sql('SELECT id FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
+        $event = $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
         //Define Objects
         $newobj = new stdClass();
         $dateend = new stdClass();
@@ -95,11 +95,10 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         $newobj->end = $dateend->dateTime;
         $newobj->start = $datestart->dateTime;
         //If the assign is already created just update, in other case insert the new assign
-        if(empty($user)){  
-            $DB->insert_record('googlecalendar',$newobj);
-        }
-        else{
-            $newobj->id = $user->id;
+        if(!empty($event->id)){  
+            $newobj->id = $event->id;
+            $newobj->google_event_id = $event->google_event_id;
+            $event_id = $newobj->google_event_id;
             $DB->update_record('googlecalendar', $newobj);
         }
         //Check if the app need to send reminders and It's enable start and end date
@@ -135,9 +134,19 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     'summary' => $summary,
                     'start' => $datestart,
                     'attendees' => $attendees
-                ];      
+                ]; 
                 $SESSION->myvar = $params;
-                $service->call('insert',[],json_encode($SESSION->myvar));
+                if(empty($event_id)){
+                    $response = $service->call('insert',[],json_encode($SESSION->myvar));
+                    $post = json_decode($response);
+                    $event_id = $post->id;
+                    $newobj->google_event_id = $event_id;
+                    $DB->insert_record('googlecalendar',$newobj);
+                }else{
+                    $functionargs = ['eventId' => $event_id];
+                    $service->call('update',$functionargs,json_encode($SESSION->myvar));
+                }
+                
             }
         }  
     } 

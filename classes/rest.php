@@ -50,6 +50,18 @@ class rest extends \core\oauth2\rest {
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
             ],
+            'update' => [                                                                                                           
+                'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars/primary/events/{eventId}',                                                          
+                'method' => 'put',                                                                                                 
+                'args' => [       
+                    'eventId' =>  PARAM_RAW,                                                                                       
+                    'end' => PARAM_RAW,
+                    'start'  => PARAM_RAW, 
+                    'attendees' =>  PARAM_RAW,
+                    'summary' =>  PARAM_RAW                                                                        
+                ],                                                                                                                  
+                'response' => 'xml'                                                                                                
+            ],
             'create' => [                                                                                                           
                 'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars',                                                          
                 'method' => 'post',                                                                                                 
@@ -59,11 +71,10 @@ class rest extends \core\oauth2\rest {
                 'response' => 'xml'                                                                                                
             ] ,
             'get' => [                                                                                                           
-                'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars/primary',                                                          
+                'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars/primary/events/{eventId}',                                                          
                 'method' => 'get',                                                                                                 
                 'args' => [                                                                                              
-                    'summary' => PARAM_RAW,
-                                                                                                      
+                    'eventId' => PARAM_RAW,                                                                          
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
             ]                                                                                                                   
