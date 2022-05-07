@@ -42,17 +42,19 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
     $user = $DB->get_record_sql('SELECT checkbox FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$courseid,$moduleid]);
     
     if ($modulename == 'assign') {
+
         $elementname1 = 'checkboxGoogleCalendar';
+
         $mform->addElement('header', 'exampleheader', get_string('message1', 'local_googlecalendar'));
+        
         $mform->addElement('advcheckbox', $elementname1, get_string('message1', 'local_googlecalendar'));
         $mform->setType($elementname1, PARAM_BOOL);
+
         if(empty($user)){
             $mform->setdefault($elementname1, ['checkbydefault']);
         }
         else{
-            if($user->checkbox == 1){
-                $mform->setdefault($elementname1, 1);
-            }
+            $mform->setdefault($elementname1, $user->checkbox);
         }
 
     }
@@ -81,14 +83,14 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         $newobj->course = $data->course;
         //Obtain the assign id
         $newobj->assign = $data->coursemodule;
-        //Obtain the value of the checkbox
+        //Obtaining value of the Google Calendar Form
         $newobj->checkbox = $data->checkboxGoogleCalendar;
         //Obtain the date when the activity start
-        $datestart->dateTime = date("Y-m-d",$data->allowsubmissionsfromdate) .'T'. date("H:m:s.000",$data->allowsubmissionsfromdate).'Z';
+        $datestart->dateTime = gmdate("Y-m-d",$data->allowsubmissionsfromdate).'T'.gmdate("H:m:s.000",$data->allowsubmissionsfromdate).'Z';
         //Obtain the name of the assign
         $summary = $data->name;
         //Obtain the date when the activity end
-        $dateend->dateTime = date("Y-m-d",$data->duedate) .'T'. date("H:m:s.000",$data->duedate).'Z';
+        $dateend->dateTime = gmdate("Y-m-d",$data->duedate) .'T'. gmdate("H:m:s.000",$data->duedate).'Z';
         //Add variables of dateTime to add them in the database
         $newobj->end = $dateend->dateTime;
         $newobj->start = $datestart->dateTime;
@@ -122,7 +124,6 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
             // Add all scopes for the API
             $scopes = 'https://www.googleapis.com/auth/calendar';
             $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
-            $eventType = 'outOfOffice';
             // Check the google session
             if (!$client->is_logged_in()) {
                 redirect($client->get_login_url());
@@ -133,8 +134,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     'end' => $dateend,
                     'summary' => $summary,
                     'start' => $datestart,
-                    'attendees' => $attendees,
-                    'eventType' => $eventType
+                    'attendees' => $attendees
                 ];      
                 $SESSION->myvar = $params;
                 $service->call('insert',[],json_encode($SESSION->myvar));

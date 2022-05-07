@@ -46,9 +46,7 @@ class rest extends \core\oauth2\rest {
                     'end' => PARAM_RAW,
                     'start'  => PARAM_RAW,  
                     'attendees' =>  PARAM_RAW,
-                    'summary' =>  PARAM_RAW,
-                    'eventType' => PARAM_RAW
-                                                                                                      
+                    'summary' =>  PARAM_RAW                                                                          
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
             ],
