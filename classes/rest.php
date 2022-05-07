@@ -62,6 +62,14 @@ class rest extends \core\oauth2\rest {
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
             ],
+            'delete' => [                                                                                                           
+                'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars/primary/events/{eventId}',                                                          
+                'method' => 'delete',                                                                                                 
+                'args' => [       
+                    'eventId' =>  PARAM_RAW                                                                    
+                ],                                                                                                                  
+                'response' => 'xml'                                                                                                
+            ],
             'create' => [                                                                                                           
                 'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars',                                                          
                 'method' => 'post',                                                                                                 

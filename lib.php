@@ -136,6 +136,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     'attendees' => $attendees
                 ]; 
                 $SESSION->myvar = $params;
+                //If the google calendat event is new create one otherwise update it
                 if(empty($event_id)){
                     $response = $service->call('insert',[],json_encode($SESSION->myvar));
                     $post = json_decode($response);
@@ -147,6 +148,31 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     $service->call('update',$functionargs,json_encode($SESSION->myvar));
                 }
                 
+            }
+        }
+        //Cancel google calendar event if it was create
+        if($newobj->checkbox == 0 and !empty($event->google_event_id)){
+            // Call API
+            // Get an issuer from the id
+            $issuer = \core\oauth2\api::get_issuer(1);
+            // Put in the returnurl the course id and sesskey
+            $sesskey = sesskey();   
+            $params = array('id' => $data->course, 'sesskey' => $sesskey);
+            // Get an OAuth client from the issuer
+            $returnurl  = new moodle_url('/course/view.php',$params);
+            // Add all scopes for the API
+            $scopes = 'https://www.googleapis.com/auth/calendar';
+            $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
+            // Check the google session
+            if (!$client->is_logged_in()) {
+                redirect($client->get_login_url());
+            }
+            else{   
+                $service = new \local_googlecalendar\rest($client);
+                $functionargs = ['eventId' => $event_id];
+                $service->call('delete',$functionargs,[]);
+                $newobj->google_event_id = null;
+                $DB->update_record('googlecalendar', $newobj);
             }
         }  
     } 
