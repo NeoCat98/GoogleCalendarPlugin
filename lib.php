@@ -209,9 +209,8 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                         $post = json_decode($response);
                         $event_id = $post->id;
                         $newobj->google_event_id = $event_id;
-                        $DB->update_record('googlecalendar', $newobj);
                     if($event){
-
+                        $DB->update_record('googlecalendar', $newobj);
                     }else{
                         $DB->insert_record('googlecalendar',$newobj);
                     }
@@ -219,7 +218,6 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                 }else{
                     $functionargs = ['eventId' => $event_id];
                     $service->call('update',$functionargs,json_encode($SESSION->myvar));
-
                 }
                 
             }
