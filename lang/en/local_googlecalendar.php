@@ -26,6 +26,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Google Calendar';
 $string['disabled'] = 'disabled plugin';
-$string['message1'] = 'Send reminder to Google Calendar';
-$string['message2'] = 'Start Date';
+$string['sendEvent'] = 'Send event to Google Calendar';
+$string['checkMessage'] = 'Check to create a event';
 $string['message3'] = 'End Date';
+$string['sdate'] = 'Start event Date';
+$string['edate'] = 'End event Date';
