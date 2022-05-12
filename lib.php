@@ -205,23 +205,21 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                 $SESSION->myvar = $params;
                 //If the google calendat event is new create one otherwise update it
                 if(empty($event_id)){
-                    $response = $service->call('insert',[],json_encode($SESSION->myvar));
-                    $post = json_decode($response);
-                    $event_id = $post->id;
-                    $newobj->google_event_id = $event_id;
-                    $DB->insert_record('googlecalendar',$newobj);
-                }else{
-                    if($event){
                         $response = $service->call('insert',[],json_encode($SESSION->myvar));
                         $post = json_decode($response);
                         $event_id = $post->id;
                         $newobj->google_event_id = $event_id;
                         $DB->update_record('googlecalendar', $newobj);
+                    if($event){
 
                     }else{
-                        $functionargs = ['eventId' => $event_id];
-                        $service->call('update',$functionargs,json_encode($SESSION->myvar));
+                        $DB->insert_record('googlecalendar',$newobj);
                     }
+                    
+                }else{
+                    $functionargs = ['eventId' => $event_id];
+                    $service->call('update',$functionargs,json_encode($SESSION->myvar));
+
                 }
                 
             }
