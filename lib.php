@@ -41,7 +41,7 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
     
     $user = $DB->get_record_sql('SELECT checkbox FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$courseid,$moduleid]);
     
-    if ($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback') {
+    if ($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'scorm') {
 
         $elementname1 = 'checkboxGoogleCalendar';
 
@@ -57,6 +57,8 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
             $mform->setdefault($elementname1, $user->checkbox);
         }
 
+    }
+    if ($modulename == '') {
     }
     
 }
@@ -178,7 +180,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         }  
     } 
     //post form for quiz/feedback module
-    if($modulename == 'quiz' or $modulename == 'feedback'){
+    if($modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'scorm'){
         $context = context_course::instance($data->course);
         //Find if the assign is already created
         $event = $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);

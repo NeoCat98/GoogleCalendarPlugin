@@ -22,10 +22,7 @@
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
- 
 namespace local_googlecalendar; 
-
-require_once($CFG->libdir . '/filelib.php');
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -46,7 +43,7 @@ class rest extends \core\oauth2\rest {
                     'end' => PARAM_RAW,
                     'start'  => PARAM_RAW,  
                     'attendees' =>  PARAM_RAW,
-                    'summary' =>  PARAM_RAW                                                                          
+                    'summary' =>  PARAM_RAW                                                                     
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
             ],
@@ -58,7 +55,7 @@ class rest extends \core\oauth2\rest {
                     'end' => PARAM_RAW,
                     'start'  => PARAM_RAW, 
                     'attendees' =>  PARAM_RAW,
-                    'summary' =>  PARAM_RAW                                                                        
+                    'summary' =>  PARAM_RAW                                                                 
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
             ],
