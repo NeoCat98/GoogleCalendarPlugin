@@ -109,16 +109,23 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
 function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
     
     //GLOBAL VARIABLES
-    GLOBAL $DB,$SESSION;
+    GLOBAL $DB;
     $modulename = $data->modulename;
     $context = context_course::instance($data->course);
     $sesskey = sesskey();
+    
+    $datestart = new stdClass();
+    $dateend = new stdClass();
+    $newEvent = new stdClass();
+    
+    $params = array('id' => $data->course, 'sesskey' => $sesskey);
+    $returnurl = new moodle_url('/course/view.php',$params);
 
-    $event_service = new \local_googlecalendar\event_service($data,$sesskey); //EVENT SERVICE
+    $event_service = new \local_googlecalendar\event_service($returnurl); //EVENT SERVICE
     $module_helper = new \local_googlecalendar\helper_service(); //HELPER SERVICE
 
     //Find if the assignment already exists
-    $event = $event_service->getExistingEvent($data);
+    $event = $event_service->getExistingEvent($data,$DB);
 
     $client = $event_service->getClient();
     
@@ -133,12 +140,12 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         if($module_helper->isRegularModule($modulename)){
             
             //Get start and end times of the assignment
-            $start_end_dates = $module_helper->getStartAndEndDates($modulename,false);
+            $start_end_dates = $module_helper->getStartAndEndDates($modulename,false,$data,$datestart,$dateend);
             $datestart = $start_end_dates['datestart'];
             $dateend = $start_end_dates['dateend'];
 
             //Create new event to insert into DB
-            $newEvent = $event_service->createEvent($modulename,$data);
+            $newEvent = $event_service->createEvent($newEvent,$data);
             $newEvent->start = $datestart->dateTime;
             $newEvent->end = $dateend->dateTime;
 
@@ -146,7 +153,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         }else if($module_helper->isSpecialModule($modulename)){
 
             //Get start and end times of the assignment
-            $start_end_dates = $module_helper->getStartAndEndDates($modulename,true);
+            $start_end_dates = $module_helper->getStartAndEndDates($modulename,true,$data,$datestart,$dateend);
             $datestart = $start_end_dates['datestart'];
             $dateend = $start_end_dates['dateend'];
             
@@ -161,7 +168,13 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
         if($module_helper->isCheckedAndDatesValid($newEvent)){
 
             //Get all users in the course
-            $attendees = $module_helper->getStudentEmails($context);
+            $submissioncandidates = get_enrolled_users($context, $withcapability = '', $groupid = 0, $userfields = 'u.*', $orderby = '', $limitfrom = 0, $limitnum = 0);
+            $attendees = [];
+            foreach ($submissioncandidates as $d){
+                $attendee = new stdClass();
+                $attendee->email = $d->email;
+                array_push($attendees,$attendee);
+            }
 
             //CALL GOOGLE API
             $service = new \local_googlecalendar\rest($client);
@@ -195,9 +208,9 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
 
 
         }else if($module_helper->isUncheckedAndEventExists($newEvent,$event)){
-            
+
             $service = new \local_googlecalendar\rest($client);
-            $functionargs = ['eventId' => $event_id];
+            $functionargs = ['eventId' => $event->google_event_id];
             
             //DELETES EVENT FROM GOOGLE
             $service->call('delete',$functionargs,[]);

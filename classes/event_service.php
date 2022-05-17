@@ -25,6 +25,8 @@
 namespace local_googlecalendar;
 
 require_once($CFG->libdir . '/filelib.php');
+include('config.php');
+
 defined('MOODLE_INTERNAL') || die();
 
 class event_service
@@ -33,27 +35,22 @@ class event_service
     private $scopes = 'https://www.googleapis.com/auth/calendar';
     
     private $issuer;
-    private $params;
-    private $returnurl;
     private $client;
 
 
-    function __construct($data,$sesskey){
-        $this->issuer = \core\oauth2\api::get_issuer($GOOGLE_ISSUER_ID);
-        $this->params = array('id' => $data->course, 'sesskey' => $sesskey);
-        $this->returnurl = new moodle_url('/course/view.php',$params);
-
-        $this->client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
+    function __construct($returnurl){
+        $this->issuer = \core\oauth2\api::get_issuer($this->GOOGLE_ISSUER_ID);
+        $this->client = \core\oauth2\api::get_user_oauth_client($this->issuer, $returnurl , $this->scopes);
     }
+
     function getClient(){
         return $this->client;
     }
-    function getExistingEvent($data){
+    function getExistingEvent($data,$DB){
         return $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
     }
-    function createEvent($modulename,$data){
+    function createEvent($newEvent,$data){
         //Define Objects
-        $newEvent = new stdClass();
         $newEvent->course = $data->course; //obtain course id
         $newEvent->assign = $data->coursemodule; // assign id 
         $newEvent->checkbox = $data->checkboxGoogleCalendar; // google plugin checkbox value

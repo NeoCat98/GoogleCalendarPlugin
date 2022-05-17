@@ -36,10 +36,8 @@ class helper_service
      * @param string modulename
      * @return $Start_end_dates
      */
-    function getStartAndEndDates($modulename,$specialModule = false){
-        
-        $datestart = new stdClass();
-        $dateend = new stdClass();
+    function getStartAndEndDates($modulename,$specialModule = false,$data,$datestart,$dateend){
+    
 
         if($specialModule){
             $datestart->dateTime = gmdate("Y-m-d",$data->startDate).'T'.gmdate("H:i:s.000",$data->startDate).'Z';
@@ -100,15 +98,14 @@ class helper_service
         return ($newEvent->checkbox == 0 and !empty($event->google_event_id));
     }
 
-    function getStudentEmails($context){
+    function getStudentEmails($context,$attendee,$gggfdsfdsfds){
         $submissioncandidates = get_enrolled_users($context, $withcapability = '', $groupid = 0, $userfields = 'u.*', $orderby = '', $limitfrom = 0, $limitnum = 0);
         
         $attendees = [];
-            foreach ($submissioncandidates as $d){
-                $attendee = new stdClass();
-                $attendee->email = $d->email;
-                array_push($attendees,$attendee);
-            }
+        foreach ($submissioncandidates as $d){
+            $attendee->email = $d->email;
+            array_push($attendees,$attendee);
+        }
         return $attendees; 
     }
 }
