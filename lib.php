@@ -39,7 +39,7 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
     $courseid = $formwrapper->get_current()->course;
     $modulename = $formwrapper->get_current()->modulename;
     
-    $user = $DB->get_record_sql('SELECT checkbox FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$courseid,$moduleid]);
+    $user = $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$courseid,$moduleid]);
      
     // Event form for normal modules
     if ($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'data' or 
@@ -93,7 +93,9 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
         }
         else{
             // Get the checkbox value if it exists
-            $mform->setdefault($eventCheckbox, $user->checkbox);  
+            $mform->setdefault($eventCheckbox, $user->checkbox);
+            $mform->setdefault($startDate, strtotime($user->start));  
+            $mform->setdefault($endDate, strtotime($user->end));    
         }
     }
     
@@ -158,12 +160,11 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
             $dateend = $start_end_dates['dateend'];
             
             //Create new event to insert into DB
-            $newEvent = $event_service->createEvent($modulename,$data);
+            $newEvent = $event_service->createEvent($newEvent,$data);
             $newEvent->start = $datestart->dateTime;
             $newEvent->end = $dateend->dateTime;
 
         }
-
         //Validates whether checkbox is activated
         if($module_helper->isCheckedAndDatesValid($newEvent)){
 
