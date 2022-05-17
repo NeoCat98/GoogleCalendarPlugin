@@ -40,11 +40,12 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
     $modulename = $formwrapper->get_current()->modulename;
     
     $user = $DB->get_record_sql('SELECT checkbox FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$courseid,$moduleid]);
-     // Event form for normal modules
+     
+    // Event form for normal modules
     if ($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'data' or 
     $modulename == 'forum' or $modulename =='scorm' or $modulename =='workshop'
     ) {
-
+        // Define the event checbox
         $eventCheckbox = 'checkboxGoogleCalendar';
 
         $mform->addElement('header', 'exampleheader', get_string('sendEvent', 'local_googlecalendar'));
@@ -74,10 +75,12 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
         $endDate = 'endDate';
         // Adding the form elements
         $mform->addElement('header', 'exampleheader', get_string('sendEvent', 'local_googlecalendar'));
+        
         $mform->addElement('advcheckbox', $eventCheckbox, get_string('checkMessage', 'local_googlecalendar'));
         $mform->addElement('date_time_selector', $startDate, get_string('sdate', 'local_googlecalendar'));
         $mform->addElement('date_time_selector', $endDate, get_string('edate', 'local_googlecalendar'));
-         // setting dataType
+        
+        // setting dataType
         $mform->setType($eventCheckbox, PARAM_BOOL);
 
          // Condition 
@@ -104,261 +107,109 @@ function local_googlecalendar_coursemodule_standard_elements($formwrapper, $mfor
  * @return $data
  */
 function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
+    
+    //GLOBAL VARIABLES
     GLOBAL $DB,$SESSION;
     $modulename = $data->modulename;
-    //post form assign/quiz/feedback/data/forum/scrom/workshop module
-    if($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'data' or 
-    $modulename == 'forum' or $modulename =='scorm' or $modulename =='workshop'){
-        $context = context_course::instance($data->course);
-        //Find if the assign is already created
-        $event = $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
-        //Define Objects
-        $newobj = new stdClass();
-        $dateend = new stdClass();
-        $datestart = new stdClass();
-        //Obtain the course id
-        $newobj->course = $data->course;
-        //Obtain the assign id
-        $newobj->assign = $data->coursemodule;
-        //Obtaining value of the Google Calendar Form
-        $newobj->checkbox = $data->checkboxGoogleCalendar;
+    $context = context_course::instance($data->course);
+    $sesskey = sesskey();
 
-        //Obtain date by module type
-        if($modulename == 'assign'){
-            //Obtain the date when the activity start
-            $datestart->dateTime = gmdate("Y-m-d",$data->allowsubmissionsfromdate).'T'.gmdate("H:i:s.000",$data->allowsubmissionsfromdate).'Z';
-            //Obtain the date when the activity end
-            $dateend->dateTime = gmdate("Y-m-d",$data->duedate) .'T'. gmdate("H:i:s.000",$data->duedate).'Z';
-        }
-        if($modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'scorm'){
-            //Obtain the date when the activity start
-            $datestart->dateTime = gmdate("Y-m-d",$data->timeopen).'T'.gmdate("H:i:s.000",$data->timeopen).'Z';
-            //Obtain the date when the activity end
-            $dateend->dateTime = gmdate("Y-m-d",$data->timeclose) .'T'. gmdate("H:i:s.000",$data->timeclose).'Z';
-       }
-       if($modulename == 'data'){
-            //Obtain the date when the activity start
-            $datestart->dateTime = gmdate("Y-m-d",$data->timeavailablefrom).'T'.gmdate("H:i:s.000",$data->timeavailablefrom).'Z';
-            //Obtain the date when the activity end
-            $dateend->dateTime = gmdate("Y-m-d",$data->timeavailableto) .'T'. gmdate("H:i:s.000",$data->timeavailableto).'Z';
-        }
-        if($modulename == 'forum'){
-            //Obtain the date when the activity start
-            $datestart->dateTime = gmdate("Y-m-d",$data->duedate).'T'.gmdate("H:i:s.000",$data->duedate).'Z';
-            //Obtain the date when the activity end
-            $dateend->dateTime = gmdate("Y-m-d",$data->cutoffdate) .'T'. gmdate("H:i:s.000",$data->cutoffdate).'Z';
-        }
-        if($modulename == 'workshop'){
-            //Obtain the date when the activity start
-            $datestart->dateTime = gmdate("Y-m-d",$data->submissionstart).'T'.gmdate("H:i:s.000",$data->submissionstart).'Z';
-            //Obtain the date when the activity end
-            $dateend->dateTime = gmdate("Y-m-d",$data->submissionend) .'T'. gmdate("H:i:s.000",$data->submissionend).'Z';
-        }
-        //Add variables of dateTime to add them in the database
-        $newobj->end = $dateend->dateTime;
-        $newobj->start = $datestart->dateTime;
+    $event_service = new \local_googlecalendar\event_service($data,$sesskey); //EVENT SERVICE
+    $module_helper = new \local_googlecalendar\helper_service(); //HELPER SERVICE
 
-        //Obtain the name of the assign
+    //Find if the assignment already exists
+    $event = $event_service->getExistingEvent($data);
+
+    $client = $event_service->getClient();
+    
+    if (!$client->is_logged_in()){
+        redirect($client->get_login_url());
+    }else{
+
+        //Obtain the name of the assignment
         $summary = $data->name;
 
-        //If the assign is already created just update, in other case insert the new assign
-        if(!empty($event->id)){  
-            $newobj->id = $event->id;
-            $newobj->google_event_id = $event->google_event_id;
-            $event_id = $newobj->google_event_id;
-            $DB->update_record('googlecalendar', $newobj);
+        //Creates new Event depending on module type
+        if($module_helper->isRegularModule($modulename)){
+            
+            //Get start and end times of the assignment
+            $start_end_dates = $module_helper->getStartAndEndDates($modulename,false);
+            $datestart = $start_end_dates['datestart'];
+            $dateend = $start_end_dates['dateend'];
+
+            //Create new event to insert into DB
+            $newEvent = $event_service->createEvent($modulename,$data);
+            $newEvent->start = $datestart->dateTime;
+            $newEvent->end = $dateend->dateTime;
+
+
+        }else if($module_helper->isSpecialModule($modulename)){
+
+            //Get start and end times of the assignment
+            $start_end_dates = $module_helper->getStartAndEndDates($modulename,true);
+            $datestart = $start_end_dates['datestart'];
+            $dateend = $start_end_dates['dateend'];
+            
+            //Create new event to insert into DB
+            $newEvent = $event_service->createEvent($modulename,$data);
+            $newEvent->start = $datestart->dateTime;
+            $newEvent->end = $dateend->dateTime;
+
         }
-        //Check if the app need to send reminders and It's enable start and end date
-        if($newobj->checkbox == 1 and $newobj->end != '1970-01-01T01:01:00.000Z' and $newobj->start != '1970-01-01T01:01:00.000Z'){
+
+        //Validates whether checkbox is activated
+        if($module_helper->isCheckedAndDatesValid($newEvent)){
+
             //Get all users in the course
-            $submissioncandidates = get_enrolled_users($context, $withcapability = '', $groupid = 0, $userfields = 'u.*', $orderby = '', $limitfrom = 0, $limitnum = 0);
-            //Save each users email in array attendees 
-            $attendees = [];
-            foreach ($submissioncandidates as $d){
-                $attendee = new stdClass();
-                $attendee->email = $d->email;
-                array_push($attendees,$attendee);
-            } 
-            // Call API
-            // Get an issuer from the id
-            $issuer = \core\oauth2\api::get_issuer(1);
-            // Put in the returnurl the course id and sesskey
-            $sesskey = sesskey();   
-            $params = array('id' => $data->course, 'sesskey' => $sesskey);
-            // Get an OAuth client from the issuer
-            $returnurl  = new moodle_url('/course/view.php',$params);
-            // Add all scopes for the API
-            $scopes = 'https://www.googleapis.com/auth/calendar';
-            $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
-            // Check the google session
-            if (!$client->is_logged_in()) {
-                redirect($client->get_login_url());
-            }
-            else{   
-                $service = new \local_googlecalendar\rest($client);
-                $params = [
-                    'end' => $dateend,
-                    'summary' => $summary,
-                    'start' => $datestart,
-                    'attendees' => $attendees
-                ]; 
-                $SESSION->myvar = $params;
-                //If the google calendat event is new create one otherwise update it
-                if(empty($event_id)){
-                    $response = $service->call('insert',[],json_encode($SESSION->myvar));
-                    $post = json_decode($response);
-                    $event_id = $post->id;
-                    $newobj->google_event_id = $event_id;
-                    $DB->insert_record('googlecalendar',$newobj);
-                }else{
-                    $functionargs = ['eventId' => $event_id];
-                    $service->call('update',$functionargs,json_encode($SESSION->myvar));
-                }
+            $attendees = $module_helper->getStudentEmails($context);
+
+            //CALL GOOGLE API
+            $service = new \local_googlecalendar\rest($client);
+            $params = ['end' => $dateend,'summary' => $summary,'start' => $datestart,'attendees' => $attendees];
+            $event_id = $event->google_event_id;
+            
+            //If the google calendat event is new create one otherwise update it
+            if(empty($event_id)){
+                $response = $service->call('insert',[],json_encode($params));
+                $JSON_response = json_decode($response);
                 
-            }
-        }
-        //Cancel google calendar event if it was create
-        if($newobj->checkbox == 0 and !empty($event->google_event_id)){
-            // Call API
-            // Get an issuer from the id
-            $issuer = \core\oauth2\api::get_issuer(1);
-            // Put in the returnurl the course id and sesskey
-            $sesskey = sesskey();   
-            $params = array('id' => $data->course, 'sesskey' => $sesskey);
-            // Get an OAuth client from the issuer
-            $returnurl  = new moodle_url('/course/view.php',$params);
-            // Add all scopes for the API
-            $scopes = 'https://www.googleapis.com/auth/calendar';
-            $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
-            // Check the google session
-            if (!$client->is_logged_in()) {
-                redirect($client->get_login_url());
-            }
-            else{   
-                $service = new \local_googlecalendar\rest($client);
+                $event_id = $JSON_response->id;
+                $newEvent->google_event_id = $event_id;
+                
+                if($event){
+                    $DB->update_record('googlecalendar', $newEvent);
+                }else{
+                    $DB->insert_record('googlecalendar',$newEvent);
+                }
+            }else{
+                //Updates the database
+                $newEvent->id = $event->id;
+                $newEvent->google_event_id = $event->google_event_id;
+                $DB->update_record('googlecalendar', $newEvent);
+
+                //Updates API
                 $functionargs = ['eventId' => $event_id];
-                $service->call('delete',$functionargs,[]);
-                $newobj->google_event_id = null;
-                $DB->update_record('googlecalendar', $newobj);
+                $service->call('update',$functionargs,json_encode($params));
             }
-        }  
+
+
+
+        }else if($module_helper->isUncheckedAndEventExists($newEvent,$event)){
+            
+            $service = new \local_googlecalendar\rest($client);
+            $functionargs = ['eventId' => $event_id];
+            
+            //DELETES EVENT FROM GOOGLE
+            $service->call('delete',$functionargs,[]);
+            $newEvent->google_event_id = null;
+
+            //UPDATES DATABASE
+            $DB->update_record('googlecalendar', $newEvent);
+
+        }
+
     }
-
-
-    //post form book/chat/choise/lti/resource/folder/glossary/h5pactivity/imscp/label/lesson/page/survey/url/wiki module
-    if($modulename == 'book' or $modulename == 'chat' or $modulename == 'choice' or $modulename == 'lti' or $modulename == 'resource'
-    or $modulename == 'folder' or $modulename == 'glossary' or $modulename == 'h5pactivity' or $modulename == 'imscp' or $modulename == 'label'
-    or $modulename == 'lesson' or $modulename == 'page' or $modulename == 'survey' or $modulename == 'url' or $modulename == 'wiki' ){
-        $context = context_course::instance($data->course);
-        //Find if the assign is already created
-        $event = $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
-        //Define Objects
-        $newobj = new stdClass();
-        $dateend = new stdClass();
-        $datestart = new stdClass();
-        //Obtain the course id
-        $newobj->course = $data->course;
-        //Obtain the assign id
-        $newobj->assign = $data->coursemodule;
-        //Obtaining value of the Google Calendar Form
-        $newobj->checkbox = $data->checkboxGoogleCalendar;
-
-        //Obtain the date when the activity start
-        $datestart->dateTime = gmdate("Y-m-d",$data->startDate).'T'.gmdate("H:i:s.000",$data->startDate).'Z';
-        //Obtain the date when the activity end
-        $dateend->dateTime = gmdate("Y-m-d",$data->endDate) .'T'. gmdate("H:i:s.000",$data->endDate).'Z';
-
-        //Add variables of dateTime to add them in the database
-        $newobj->end = $dateend->dateTime;
-        $newobj->start = $datestart->dateTime;
-
-        //Obtain the name of the assign
-        $summary = $data->name;
-
-        //If the assign is already created just update, in other case insert the new assign
-        if(!empty($event->id)){  
-            $newobj->id = $event->id;
-            $newobj->google_event_id = $event->google_event_id;
-            $event_id = $newobj->google_event_id;
-            $DB->update_record('googlecalendar', $newobj);
-        }
-        //Check if the app need to send reminders and It's enable start and end date
-        if($newobj->checkbox == 1 and $newobj->end != '1970-01-01T01:01:00.000Z' and $newobj->start != '1970-01-01T01:01:00.000Z'){
-            //Get all users in the course
-            $submissioncandidates = get_enrolled_users($context, $withcapability = '', $groupid = 0, $userfields = 'u.*', $orderby = '', $limitfrom = 0, $limitnum = 0);
-            //Save each users email in array attendees 
-            $attendees = [];
-            foreach ($submissioncandidates as $d){
-                $attendee = new stdClass();
-                $attendee->email = $d->email;
-                array_push($attendees,$attendee);
-            } 
-            // Call API
-            // Get an issuer from the id
-            $issuer = \core\oauth2\api::get_issuer(1);
-            // Put in the returnurl the course id and sesskey
-            $sesskey = sesskey();   
-            $params = array('id' => $data->course, 'sesskey' => $sesskey);
-            // Get an OAuth client from the issuer
-            $returnurl  = new moodle_url('/course/view.php',$params);
-            // Add all scopes for the API
-            $scopes = 'https://www.googleapis.com/auth/calendar';
-            $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
-            // Check the google session
-            if (!$client->is_logged_in()) {
-                redirect($client->get_login_url());
-            }
-            else{   
-                $service = new \local_googlecalendar\rest($client);
-                $params = [
-                    'end' => $dateend,
-                    'summary' => $summary,
-                    'start' => $datestart,
-                    'attendees' => $attendees
-                ]; 
-                $SESSION->myvar = $params;
-                //If the google calendat event is new create one otherwise update it
-                if(empty($event_id)){
-                    $response = $service->call('insert',[],json_encode($SESSION->myvar));
-                    $post = json_decode($response);
-                    $event_id = $post->id;
-                    $newobj->google_event_id = $event_id;
-                    $DB->insert_record('googlecalendar',$newobj);
-                }else{
-                    $functionargs = ['eventId' => $event_id];
-                    $service->call('update',$functionargs,json_encode($SESSION->myvar));
-                }
-                
-            }
-        }
-        //Cancel google calendar event if it was create
-        if($newobj->checkbox == 0 and !empty($event->google_event_id)){
-            // Call API
-            // Get an issuer from the id
-            $issuer = \core\oauth2\api::get_issuer(1);
-            // Put in the returnurl the course id and sesskey
-            $sesskey = sesskey();   
-            $params = array('id' => $data->course, 'sesskey' => $sesskey);
-            // Get an OAuth client from the issuer
-            $returnurl  = new moodle_url('/course/view.php',$params);
-            // Add all scopes for the API
-            $scopes = 'https://www.googleapis.com/auth/calendar';
-            $client = \core\oauth2\api::get_user_oauth_client($issuer, $returnurl , $scopes);
-            // Check the google session
-            if (!$client->is_logged_in()) {
-                redirect($client->get_login_url());
-            }
-            else{   
-                $service = new \local_googlecalendar\rest($client);
-                $functionargs = ['eventId' => $event_id];
-                $service->call('delete',$functionargs,[]);
-                $newobj->google_event_id = null;
-                $DB->update_record('googlecalendar', $newobj);
-            }
-        }  
-    } 
-   
-
+    
     return $data;
 }
 
