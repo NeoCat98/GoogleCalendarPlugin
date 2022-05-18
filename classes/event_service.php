@@ -43,12 +43,31 @@ class event_service
         $this->client = \core\oauth2\api::get_user_oauth_client($this->issuer, $returnurl , $this->scopes);
     }
 
+    /**
+     * returns the current logged in client
+     *
+     * @return object
+     */
     function getClient(){
         return $this->client;
     }
+    /**
+     * Gets an existing evetn from the database
+     *
+     * @param object $data
+     * @param object $DB
+     * @return void
+     */
     function getExistingEvent($data,$DB){
         return $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
     }
+    /**
+     * Creates new event object to insert into database
+     *
+     * @param object $newEvent
+     * @param object $data
+     * @return object
+     */
     function createEvent($newEvent,$data){
         //Define Objects
         $newEvent->course = $data->course; //obtain course id

@@ -80,24 +80,55 @@ class helper_service
         return ['datestart' => $datestart, 'dateend' => $dateend];
     }
 
+    /**
+     * Return whether a module is a regular module
+     *
+     * @param string $modulename
+     * @return boolean
+     */
     function isRegularModule($modulename){
         return ($modulename == 'assign' or $modulename == 'quiz' or $modulename == 'feedback' or $modulename == 'data' or 
         $modulename == 'forum' or $modulename =='scorm' or $modulename =='workshop');
     }
 
+    /**
+     * Return whether a module is a regular module
+     *
+     * @param string $modulename
+     * @return boolean
+     */
     function isSpecialModule($modulename){
         return ($modulename == 'book' or $modulename == 'chat' or $modulename == 'choice' or $modulename == 'lti' or $modulename == 'resource'
         or $modulename == 'folder' or $modulename == 'glossary' or $modulename == 'h5pactivity' or $modulename == 'imscp' or $modulename == 'label'
         or $modulename == 'lesson' or $modulename == 'page' or $modulename == 'survey' or $modulename == 'url' or $modulename == 'wiki' );
     }
 
+    /**
+     * checks whether the event reminder checkbox was checked, and the dates are valid
+     *
+     * @param object $newEvent 
+     * @return boolean
+     */
     function isCheckedAndDatesValid($newEvent){
         return ($newEvent->checkbox == 1 and $newEvent->end != '1970-01-01T01:01:00.000Z' and $newEvent->start != '1970-01-01T01:01:00.000Z');
     }
+    /**
+     * checks whether the event reminder checkbox was unchecked, and if the event prevoisuly existed
+     *
+     * @param object $newEvent 
+     * @return boolean
+     */
     function isUncheckedAndEventExists($newEvent,$event){
         return ($newEvent->checkbox == 0 and !empty($event->google_event_id));
     }
 
+    /**
+     * Returns the email address of an array of enrolled students
+     *
+     * @param object $context
+     * @param object $attendee  
+     * @return array
+     */
     function getStudentEmails($context,$attendee,$gggfdsfdsfds){
         $submissioncandidates = get_enrolled_users($context, $withcapability = '', $groupid = 0, $userfields = 'u.*', $orderby = '', $limitfrom = 0, $limitnum = 0);
         

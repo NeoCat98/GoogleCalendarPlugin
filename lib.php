@@ -25,7 +25,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * @param moodleform $formwrapper The moodle quickforms wrapper object.
+ * @param object moodleform $formwrapper The moodle quickforms wrapper object.
  * @param MoodleQuickForm $mform The actual form object (required to modify the form).
  * https://docs.moodle.org/dev/Callbacks
  * This function name depends on which plugin is implementing it. So if you were
