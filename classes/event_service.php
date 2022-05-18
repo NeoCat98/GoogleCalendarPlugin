@@ -56,7 +56,7 @@ class event_service
      *
      * @param object $data
      * @param object $DB
-     * @return void
+     * @return object
      */
     function getExistingEvent($data,$DB){
         return $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
