@@ -58,12 +58,31 @@ class event_service
         return $GOOGLE_ISSUER_ID->id;
     }
 
+    /**
+     * returns the current logged in client
+     *
+     * @return object
+     */
     function getClient(){
         return $this->client;
     }
+    /**
+     * Gets an existing evetn from the database
+     *
+     * @param object $data
+     * @param object $DB
+     * @return object
+     */
     function getExistingEvent($data,$DB){
         return $DB->get_record_sql('SELECT * FROM {googlecalendar} WHERE course = ? AND assign = ?;',[$data->course,$data->coursemodule]);
     }
+    /**
+     * Creates new event object to insert into database
+     *
+     * @param object $newEvent
+     * @param object $data
+     * @return object
+     */
     function createEvent($newEvent,$data){
         //Define Objects
         $newEvent->course = $data->course; //obtain course id
