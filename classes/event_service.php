@@ -31,16 +31,31 @@ defined('MOODLE_INTERNAL') || die();
 
 class event_service
 {
-    private $GOOGLE_ISSUER_ID = 1;
+    private $GOOGLE_ISSUER_NAME;
     private $scopes = 'https://www.googleapis.com/auth/calendar';
     
     private $issuer;
     private $client;
 
 
-    function __construct($returnurl){
-        $this->issuer = \core\oauth2\api::get_issuer($this->GOOGLE_ISSUER_ID);
+    function __construct($returnurl,$GOOGLE_ISSUER_NAME){
+        $this->setIssuerName($GOOGLE_ISSUER_NAME);
+        $this->issuer = \core\oauth2\api::get_issuer($this->getIssuerID());
         $this->client = \core\oauth2\api::get_user_oauth_client($this->issuer, $returnurl , $this->scopes);
+    }
+
+    function setIssuerName($GOOGLE_ISSUER_NAME){
+        if(empty($GOOGLE_ISSUER_NAME)){
+            $this->GOOGLE_ISSUER_NAME = 'Google';
+        }else{
+            $this->GOOGLE_ISSUER_NAME = $GOOGLE_ISSUER_NAME;
+        }
+    }
+
+    function getIssuerID(){
+        global $DB;
+        $GOOGLE_ISSUER_ID = $DB->get_record_sql('SELECT id FROM {oauth2_issuer} WHERE name = :issuername;',['issuername' =>$this->GOOGLE_ISSUER_NAME]);
+        return $GOOGLE_ISSUER_ID->id;
     }
 
     function getClient(){

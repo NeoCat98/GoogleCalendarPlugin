@@ -26,6 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $string['pluginname'] = 'Google Calendar';
 $string['disabled'] = 'disabled plugin';
+$string['issuer'] = 'Google OAuth 2 Service Name';
 $string['sendEvent'] = 'Send event to Google Calendar';
 $string['checkMessage'] = 'Check to create a event';
 $string['message3'] = 'End Date';
