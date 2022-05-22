@@ -22,13 +22,30 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die();
+defined('MOODLE_INTERNAL') || die;
 
-$string['pluginname'] = 'Google Calendar';
-$string['disabled'] = 'Desactivar plugin';
-$string['issuer'] = 'Nombre del Servicio de Google OAuth 2';
-$string['message1'] = 'Send reminder to Google Calendar';
-$string['message2'] = 'Start Date';
-$string['message3'] = 'End Date';
-$string['sdate'] = 'Start event Date';
-$string['edate'] = 'End event Date';
+if ($hassiteconfig) { // Needs this condition or there is error on login page.
+    $settings = new admin_settingpage(
+        'local_googlecalendar',
+        get_string('pluginname','local_googlecalendar')
+    );
+
+    $ADMIN->add('localplugins',$settings);
+
+    $settings->add(
+        new admin_setting_configcheckbox(
+            'local_googlecalendar_remove',
+            get_string('disabled','local_googlecalendar'),
+            '',
+            0
+        )
+    );
+    $settings->add(
+        new admin_setting_configtext(
+            'local_googlecalendar_issuer',
+            get_string('issuer','local_googlecalendar'),
+            '',
+            'Google'
+        )
+    );
+}
