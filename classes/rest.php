@@ -18,7 +18,7 @@
  * Manage course custom fields
  *
  * @package local_googlecalendar
- * @copyright 2022 Javier Mejia
+ * @copyright 2022 Javier Mejia, Luis Anstirman, Ricardo Villeda, David Guardado
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -66,23 +66,7 @@ class rest extends \core\oauth2\rest {
                     'eventId' =>  PARAM_RAW                                                                    
                 ],                                                                                                                  
                 'response' => 'xml'                                                                                                
-            ],
-            'create' => [                                                                                                           
-                'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars',                                                          
-                'method' => 'post',                                                                                                 
-                'args' => [                                                                                              
-                    'summary' => PARAM_RAW,                                                            
-                ],                                                                                                                  
-                'response' => 'xml'                                                                                                
-            ] ,
-            'get' => [                                                                                                           
-                'endpoint' => 'https://www.googleapis.com/calendar/v3/calendars/primary/events/{eventId}',                                                          
-                'method' => 'get',                                                                                                 
-                'args' => [                                                                                              
-                    'eventId' => PARAM_RAW,                                                                          
-                ],                                                                                                                  
-                'response' => 'xml'                                                                                                
-            ]                                                                                                                   
+            ]                                                                                                              
         ];                                                                                                                          
     }
     

@@ -18,17 +18,16 @@
  * Plugin strings are defined here.
  *
  * @package     local_googlecalendar
- * @copyright   2022 Javier Mejia
+ * @copyright   2022 Javier Mejia, Luis Anstirman, Ricardo Villeda, David Guardado
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
-$string['pluginname'] = 'Google Calendar';
+$string['pluginname'] = 'Google Calendar Events';
 $string['disabled'] = 'Desactivar plugin';
 $string['issuer'] = 'Nombre del Servicio de Google OAuth 2';
-$string['message1'] = 'Send reminder to Google Calendar';
-$string['message2'] = 'Start Date';
-$string['message3'] = 'End Date';
-$string['sdate'] = 'Start event Date';
-$string['edate'] = 'End event Date';
+$string['sendEvent'] = 'Enviar Evento con Google Calendar';
+$string['checkMessage'] = 'Activar Evento Google Calendar';
+$string['sdate'] = 'Fecha inicio del Evento';
+$string['edate'] = 'Fecha fin del Evento';

@@ -18,7 +18,7 @@
  * Manage course custom fields
  *
  * @package local_googlecalendar
- * @copyright 2022 Fernando Anstirman
+ * @copyright 2022 Javier Mejia, Luis Anstirman, Ricardo Villeda, David Guardado
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

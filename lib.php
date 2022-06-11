@@ -18,7 +18,7 @@
  * Plugin strings are defined here.
  *
  * @package     local_googlecalendar
- * @copyright   2022 Javier Mejia
+ * @copyright   2022 Javier Mejia, Luis Anstirman, Ricardo Villeda, David Guardado
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -193,6 +193,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     $newEvent->google_event_id = $event_id;
                     
                     if($event){
+                        $newEvent->id = $event->id;
                         $DB->update_record('googlecalendar', $newEvent);
                     }else{
                         $DB->insert_record('googlecalendar',$newEvent);
@@ -211,7 +212,7 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
 
 
             }else if($module_helper->isUncheckedAndEventExists($newEvent,$event)){
-
+                $newEvent->id = $event->id;
                 $service = new \local_googlecalendar\rest($client);
                 $functionargs = ['eventId' => $event->google_event_id];
                 

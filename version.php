@@ -18,11 +18,12 @@
  * Plugin strings are defined here.
  *
  * @package     local_googlecalendar
- * @copyright   2022 Javier Mejia
+ * @copyright   2022 Javier Mejia, Luis Anstirman, Ricardo Villeda, David Guardado
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_googlecalendar';
 $plugin->version = 2022042601;
+$plugin->maturity = MATURITY_STABLE;
 $plugin->requires = 2019052000; // Requires Moodle 3.7.
