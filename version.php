@@ -27,3 +27,4 @@ $plugin->component = 'local_googlecalendar';
 $plugin->version = 2022042601;
 $plugin->maturity = MATURITY_STABLE;
 $plugin->requires = 2019052000; // Requires Moodle 3.7.
+$plugin->release = 'v1.0';
