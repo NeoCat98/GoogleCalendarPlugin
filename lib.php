@@ -192,24 +192,38 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     $event_id = $JSON_response->id;
                     $newEvent->google_event_id = $event_id;
                     
-                    if($event){
-                        $newEvent->id = $event->id;
-                        $DB->update_record('googlecalendar', $newEvent);
-                    }else{
-                        $DB->insert_record('googlecalendar',$newEvent);
+                    if($JSON_response->status == 'confirmed'){
+                        \core\notification::success(get_string('msgCreateEvent','local_googlecalendar'));
+                        
+                        //Updates the database
+                        if($event){
+                            $newEvent->id = $event->id;
+                            $DB->update_record('googlecalendar', $newEvent);
+                        }else{
+                            $DB->insert_record('googlecalendar',$newEvent);
+                        }
+                    }
+                    else{
+                        \core\notification::error(get_string('msgError','local_googlecalendar'));
                     }
                 }else{
-                    //Updates the database
-                    $newEvent->id = $event->id;
-                    $newEvent->google_event_id = $event->google_event_id;
-                    $DB->update_record('googlecalendar', $newEvent);
-
                     //Updates API
                     $functionargs = ['eventId' => $event_id];
-                    $service->call('update',$functionargs,json_encode($params));
+                    $response = $service->call('update',$functionargs,json_encode($params));
+
+                    $JSON_response = json_decode($response);
+
+                    if($JSON_response->status == 'confirmed'){
+                        \core\notification::success(get_string('msgUpdateEvent','local_googlecalendar'));
+
+                        //Updates the database
+                        $newEvent->id = $event->id;
+                        $newEvent->google_event_id = $event->google_event_id;
+                        $DB->update_record('googlecalendar', $newEvent);
+                    }else{
+                        \core\notification::error(get_string('msgError','local_googlecalendar'));
+                    }
                 }
-
-
 
             }else if($module_helper->isUncheckedAndEventExists($newEvent,$event)){
                 $newEvent->id = $event->id;
@@ -220,8 +234,14 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                 $service->call('delete',$functionargs,[]);
                 $newEvent->google_event_id = null;
 
-                //UPDATES DATABASE
-                $DB->update_record('googlecalendar', $newEvent);
+                if($JSON_response->status == 'confirmed'){
+                    \core\notification::success(get_string('msgDeleteEvent','local_googlecalendar'));
+                    
+                    //Updates the database
+                    $DB->update_record('googlecalendar', $newEvent);
+                }else{
+                    \core\notification::error(get_string('msgError','local_googlecalendar'));
+                }
 
             }
 
@@ -242,7 +262,9 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
  * @return void
  */
 function local_googlecalendar_coursemodule_validation($fromform, $fields) {
-    if (get_class($fromform) == 'mod_assign_mod_form') {
-       // \core\notification::add($fields[1], \core\notification::INFO);
+    $errors = array();
+    if($fields['endDate']<$fields['startDate']){
+        //$errors['endDate'] = get_string('msgDateError','local_googlecalendar');
     }
+    return $errors;
 }

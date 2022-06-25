@@ -31,3 +31,10 @@ $string['sendEvent'] = 'Enviar Evento con Google Calendar';
 $string['checkMessage'] = 'Activar Evento Google Calendar';
 $string['sdate'] = 'Fecha inicio del Evento';
 $string['edate'] = 'Fecha fin del Evento';
+//Validation
+$string['msgDateError'] = 'La fecha final tiene que ser mayor que la fecha inicial';
+//Notification
+$string['msgDeleteEvent'] = 'El evento de Google Calendar fue eliminado correctamente';
+$string['msgUpdateEvent'] = 'El evento de Google Calendar fue actualizado correctamente';
+$string['msgCreateEvent'] = 'El evento de Google Calendar fue creado correctamente';
+$string['msgError'] = 'Hubo un error. Espere unos minutos antes de volver a intentarlo';
