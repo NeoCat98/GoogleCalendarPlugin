@@ -210,19 +210,13 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     //Updates API
                     $functionargs = ['eventId' => $event_id];
                     $response = $service->call('update',$functionargs,json_encode($params));
-
-                    $JSON_response = json_decode($response);
-
-                    if($JSON_response->status == 'confirmed'){
-                        \core\notification::success(get_string('msgUpdateEvent','local_googlecalendar'));
-
-                        //Updates the database
-                        $newEvent->id = $event->id;
-                        $newEvent->google_event_id = $event->google_event_id;
-                        $DB->update_record('googlecalendar', $newEvent);
-                    }else{
-                        \core\notification::error(get_string('msgError','local_googlecalendar'));
-                    }
+                    
+                    \core\notification::success(get_string('msgUpdateEvent','local_googlecalendar'));
+                    //Updates the database
+                    $newEvent->id = $event->id;
+                    $newEvent->google_event_id = $event->google_event_id;
+                    $DB->update_record('googlecalendar', $newEvent);
+        
                 }
 
             }else if($module_helper->isUncheckedAndEventExists($newEvent,$event)){
