@@ -215,7 +215,13 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                     //Updates the database
                     $newEvent->id = $event->id;
                     $newEvent->google_event_id = $event->google_event_id;
-                    $DB->update_record('googlecalendar', $newEvent);
+
+                    $JSON_response = json_decode($response);
+                    if($JSON_response->status == 'confirmed'){
+                        $DB->update_record('googlecalendar', $newEvent);
+                    }else{
+                        \core\notification::error(get_string('msgError','local_googlecalendar'));
+                    }
         
                 }
 
@@ -227,15 +233,10 @@ function local_googlecalendar_coursemodule_edit_post_actions($data, $course) {
                 //DELETES EVENT FROM GOOGLE
                 $service->call('delete',$functionargs,[]);
                 $newEvent->google_event_id = null;
-
-                if($JSON_response->status == 'confirmed'){
-                    \core\notification::success(get_string('msgDeleteEvent','local_googlecalendar'));
-                    
-                    //Updates the database
-                    $DB->update_record('googlecalendar', $newEvent);
-                }else{
-                    \core\notification::error(get_string('msgError','local_googlecalendar'));
-                }
+                \core\notification::success(get_string('msgDeleteEvent','local_googlecalendar'));
+                //Updates the database
+                $DB->update_record('googlecalendar', $newEvent);
+                
 
             }
 
